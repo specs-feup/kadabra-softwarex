@@ -1,0 +1,40 @@
+import kadabra.Utils;
+import kadabra.Transform;
+import kadabra.adapt.Autotuner;
+aspectdef AutotunerWithGenerator
+ // get all methods called "sort" in package "algorithms"
+ var methods = selectMethods('algorithms\.[^S].*', 'sort'); //ignore sorting network
+ // select calls to the sort method and their argument (the array to sort)
+ select class.call{"sort"}.arg end
+ apply
+  // Build functional interface and replace static call with field invocation
+  var extracted = call ExtractToField($call);
+  var type = extracted.$interface.qualifiedName; //type of the new interface
+  var algKnob = extracted.$field;  //new field that replaces the static call   
+  var scenario = $arg+".length"; //the array size is used to map explorations
+  
+  var builder = new AutotunerBuilder("SortTuner", "Integer", type, "Long")
+     .setMeasurer(Measurer.avgTime())
+     .addAlgorithm(extracted.defaultMethod); //explore original method
+  call AddSortingNetworkGenerator(builder, extracted, $class);
+  // Add all sort algorithms to the exploration
+  for(var alg of methods){
+    builder.addAlgorithm(alg);
+  }
+  
+  //Generate a new autotuner class and instantiate it in current class
+  var autotuner = builder.generate() //generate autotuner class
+  	.newInstance(algKnob, 5, 20) //target the new field
+  	.updateAndMeasure(scenario, $call); //update when call is executed
+  
+  printOnMain('"-= EXPLORATION REPORT =-"',autotuner.$tuner);
+ end
+end
+
+aspectdef AddSortingNetworkGenerator
+	input builder, extracted, $class end
+	select $class.method{"getCurrentSize"} end
+	apply 
+		builder.addGenerativeAlg("specialized", extracted.$interfaceMethod, "sortingNetwork", %{[[$class.qualifiedName]].[[$method.name]]()}%);
+	end
+end
