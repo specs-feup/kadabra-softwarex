@@ -13,7 +13,7 @@ aspectdef AutotunerWithGenerator
   var algKnob = extracted.$field;  //new field that replaces the static call   
   var scenario = $arg+".length"; //the array size is used to map explorations
   
-  var builder = new AutotunerBuilder("SortTuner", "Integer", type, "Long")
+  var builder = new AutotunerBuilder("SortTuner", "java.lang.Integer", type, "java.lang.Long")
      .setMeasurer(Measurer.avgTime())
      .addAlgorithm(extracted.defaultMethod); //explore original method
   call AddSortingNetworkGenerator(builder, extracted, $class);
