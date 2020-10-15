@@ -2,7 +2,7 @@ package examples;
 
 import java.util.Arrays;
 import java.util.Random;
-
+import java.lang.StringBuilder;
 import algorithms.Quicksort;
 
 public class Main {
@@ -14,20 +14,24 @@ public class Main {
 
     private static int currentSize;
 
+    public static void testSize(int size){
+    	System.out.println("Testing arrays for size "+size+"...");
+    	Random random = new Random();
+    	int[] values = new int[size];
+    	for (int it = 0; it < NUM_EXECS; it++) {
+           for (int i = 0; i < size; i++) {
+               values[i] = random.nextInt(MAX_INT);
+           }
+           Quicksort.sort(values); // sorting unsorted array
+       }
+       return;
+    }
+
     public static void main(String[] args) throws InterruptedException {
 
-        Random random = new Random();
         for (int size : SIZES) {
             setCurrentSize(size);
-            int[] values = new int[size];
-            for (int it = 0; it < NUM_EXECS; it++) {
-                for (int i = 0; i < size; i++) {
-                    values[i] = random.nextInt(MAX_INT);
-                }
-                System.out.println("Unsorted Array #" + (it + 1) + ": " + Arrays.toString(values));
-                Quicksort.sort(values); // sorting unsorted array
-                System.out.println("  Sorted Array #" + (it + 1) + ": " + Arrays.toString(values));
-            }
+            testSize(size);
         }
     }
 

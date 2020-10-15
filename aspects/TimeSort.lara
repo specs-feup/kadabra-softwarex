@@ -1,0 +1,12 @@
+import kadabra.monitor.Timer;
+
+aspectdef TimeSort
+	 sortC: select class.method.call{'sort'} end
+	 argM: select class.method.param{'size'} end
+	 apply to sortC::argM
+	   var timer = new Timer.nanoTimer($class);
+	   timer.start($call);
+	   timer.pause($call,'after');
+	   call BeforeExit($method, %{System.out.println("QuickSort average time for size " +[[$param.name]]+": "+[[timer.getAvg()]]+"ns"); }% );
+	 end
+end
